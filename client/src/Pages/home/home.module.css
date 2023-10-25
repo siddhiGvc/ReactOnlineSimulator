@@ -1,0 +1,27 @@
+
+.container{
+    width: 100%;
+    background-color: rgb(250,250,250);
+    /* padding-left: 20px; */
+
+    display: flex;
+    justify-content: center;
+    padding-top: 30px;
+    padding-bottom: 50px;
+
+    /* display: flex; */
+    /* flex-direction: column; */
+    /* gap:30px; */
+    
+}
+
+/* .container>div>div:nth-child(2){
+    width:40%;
+} */
+/* .container>div{
+    width: 100%;
+    display: flex;
+    margin: auto;
+    gap: 200px;
+    
+} */
