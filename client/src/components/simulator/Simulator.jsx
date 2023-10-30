@@ -1,59 +1,131 @@
 import styles from "./Simulator.module.css"
 import Button from '@mui/material/Button';
 import { TextField } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Client } from 'paho-mqtt';
+
+
+// import mqtt from "mqtt"
+
+
+
+
+
 
 export default function Simulator(){
-   const [machine1,setMachine1]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine2,setMachine2]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine3,setMachine3]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine4,setMachine4]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine5,setMachine5]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine6,setMachine6]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine7,setMachine7]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine8,setMachine8]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine9,setMachine9]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine10,setMachine10]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine11,setMachine11]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine12,setMachine12]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine13,setMachine13]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine14,setMachine14]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine15,setMachine15]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine16,setMachine16]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine17,setMachine17]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine18,setMachine18]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine19,setMachine19]=useState({machine_number:"", bgColor:'black',value:0})
-   const [machine20,setMachine20]=useState({machine_number:"", bgColor:'black',value:0})
+   const [machineNumbers,setMachineNumber]=useState([0,0]);
+   const [timeOuts,setTimeouts]=useState([]);
+   const [simulatorColors,setSimulatorColors]=useState([]);
+   const [messageArray,setMessageArray]=useState([]);
 
 
+   useEffect(()=>{
+   LoadingMqtt();
+   
+},[])
+    
+    const LoadingMqtt=()=>{
+      var Length=2;
+    
+      var msgArray = [];
+      for (var i = 0 ;  i < Length ; i++)
+      {
+          msgArray.push ({"payload" : i})
+      }
+      var TimeOut = [];
+      for (var i = 0 ; i < Length ; i++)
+      {
+        TimeOut[i] = 0;
+      }
+      setTimeouts(TimeOut)
+      var SimulatorColors = [];
+       for (var i = 0; i < Length; i++)
+       {
+        SimulatorColors[i] = 'blue';
+       }
+       setSimulatorColors(SimulatorColors);
+       localStorage.setItem("WarningTime",130);
+   
+        var MachineNumbers=JSON.parse(localStorage.getItem("MachineNumbers")) || machineNumbers;
+        setMachineNumber(MachineNumbers);
+     
+        var simulator_colors=JSON.parse(localStorage.getItem("SimulatorColors")) || simulatorColors;
+        setSimulatorColors(simulator_colors);
+      
+     
+        var timeouts=JSON.parse(localStorage.getItem("TimeOuts")) || timeOuts;
+        setSimulatorColors(timeouts);
+      
+        const broker = 'broker.emqx.io'; // Replace with your MQTT broker URL
+      
+       // Replace with your MQTT password
+    
+        const client = new Client(broker,8083, 'SIDDHI-DH'); // Replace with your MQTT broker details
+    
+        client.onConnectionLost = (responseObject) => {
+          if (responseObject.errorCode !== 0) {
+            console.log('Connection lost:', responseObject.errorMessage);
+          }
+        };
+    
+        client.connect({
+          onSuccess: onConnect,
+         
+        });
+    
+        client.onMessageArrived = (message) => {
+          console.log('Message received on topic:', message.destinationName);
+          console.log('Payload:', message.payloadString);
+          // Handle the MQTT message here
+        };
+
+        function onConnect(){
+          console.log('Connected to MQTT broker');
+          // Subscribe to a topic
+          client.subscribe('GVC/VM/#');
+        }
+
+        return () => {
+          client.disconnect();
+        };
+       
 
 
+    }
+    
 
+     const Machine1Change=(e)=>{
+   
+        const MachineNumbers = JSON.parse(localStorage.getItem("MachineNumbers"))|| machineNumbers;
+        MachineNumbers[0]=parseInt(e.target.value);
+        localStorage.setItem("MachineNumbers",JSON.stringify(MachineNumbers));
+        setMachineNumber(MachineNumbers);
+        LoadingMqtt()
+    }
+    const Machine2Change=(e)=>{
+   
+      const MachineNumbers = JSON.parse(localStorage.getItem("MachineNumbers"))|| machineNumbers;
+      MachineNumbers[1]=parseInt(e.target.value);
+      localStorage.setItem("MachineNumbers",JSON.stringify(MachineNumbers));
+      setMachineNumber(MachineNumbers);
+      LoadingMqtt()
+  }
 
-
-
-
-
-
-
-
-
-
-
-
-
-    return <>
+return <>
 
     <div className={styles.mainContainer}>
 <div className={styles.container}>
-       
-        <div className={styles.buttonBox}>
-        <Button variant="contained" sx={{backgroundColor:`${machine1.bgColor}`,position:"static",width:"100%",margin:"auto",height:"40px",fontSize:"100%",fontWeight:"400"}}>{`${machine1.machine_number}${machine1.value}`}</Button>
+        <div className={styles.header}>
+          <p>Start Stop</p>
+
         </div>
         <div className={styles.buttonBox}>
-        <Button variant="contained" sx={{backgroundColor:`${machine2.bgColor}`,position:"static",width:"100%",margin:"auto",height:"40px",fontSize:"100%",fontWeight:"400"}}>{`${machine2.machine_number}${machine2.value}`}</Button>
+        <Button variant="contained" sx={{backgroundColor:`${simulatorColors[0]}`,position:"static",width:"100%",margin:"auto",height:"40px",fontSize:"100%",fontWeight:"400"}} >{`${machineNumbers[0]} ${timeOuts[0]}`}</Button>
         </div>
         <div className={styles.buttonBox}>
+        <Button variant="contained" sx={{backgroundColor:`${simulatorColors[1]}`,position:"static",width:"100%",margin:"auto",height:"40px",fontSize:"100%",fontWeight:"400"}}>{`${machineNumbers[1]} ${timeOuts[1]}`}</Button>
+        </div>
+        {/* <div className={styles.buttonBox}>
         <Button variant="contained" sx={{backgroundColor:`${machine3.bgColor}`,position:"static",width:"100%",margin:"auto",height:"40px",fontSize:"100%",fontWeight:"400"}}>{`${machine3.machine_number}${machine3.value}`}</Button>
         </div>
         <div className={styles.buttonBox}>
@@ -106,7 +178,7 @@ export default function Simulator(){
         </div>
         <div className={styles.buttonBox}>
         <Button variant="contained" sx={{backgroundColor:`${machine20.bgColor}`,position:"static",width:"100%",margin:"auto",height:"40px",fontSize:"100%",fontWeight:"400"}}>{`${machine20.machine_number}${machine20.value}`}</Button>
-        </div>
+        </div> */}
       
       
 </div>
@@ -114,24 +186,33 @@ export default function Simulator(){
       
 
     <div className={styles.container}>
-     
+    <div className={styles.header}>
+          <p>Machine Number</p>
+
+        </div>
      
         <div className={styles.rowContainer}>
         <TextField
           id="standard-multiline-flexible"
           label="Machine 1"
+          type="number"
           multiline
           maxRows={4}
           variant="standard"
+          value={machineNumbers[0]}
+          onChange={(e)=>Machine1Change(e)}
+        
         />
            <TextField
           id="standard-multiline-flexible"
           label="Machine 2"
           multiline
           maxRows={4}
+          value={machineNumbers[1]}
+          onChange={(e)=>Machine2Change(e)}
           variant="standard"
         />
-           <TextField
+           {/* <TextField
           id="standard-multiline-flexible"
           label="Machine 3"
           multiline
@@ -256,7 +337,7 @@ export default function Simulator(){
           multiline
           maxRows={4}
           variant="standard"
-        />
+        /> */}
          
 
         </div>
