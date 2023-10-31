@@ -14,7 +14,7 @@ import { Client } from 'paho-mqtt';
 
 export default function Simulator(){
    const [machineNumbers,setMachineNumber]=useState([0,0]);
-   const [timeOuts,setTimeouts]=useState([]);
+   const [timeOuts,setTimeouts]=useState([0,0]);
    const [simulatorColors,setSimulatorColors]=useState([]);
    const [messageArray,setMessageArray]=useState([]);
 
@@ -36,8 +36,9 @@ export default function Simulator(){
       for (var i = 0 ; i < Length ; i++)
       {
         TimeOut[i] = 0;
+        setTimeouts(TimeOut)
       }
-      setTimeouts(TimeOut)
+    
       var SimulatorColors = [];
        for (var i = 0; i < Length; i++)
        {
@@ -52,9 +53,10 @@ export default function Simulator(){
         var simulator_colors=JSON.parse(localStorage.getItem("SimulatorColors")) || simulatorColors;
         setSimulatorColors(simulator_colors);
       
-     
         var timeouts=JSON.parse(localStorage.getItem("TimeOuts")) || timeOuts;
-        setSimulatorColors(timeouts);
+        setTimeouts(timeouts);
+      
+      
       
         const broker = 'broker.emqx.io'; // Replace with your MQTT broker URL
       
@@ -76,6 +78,61 @@ export default function Simulator(){
         client.onMessageArrived = (message) => {
           console.log('Message received on topic:', message.destinationName);
           console.log('Payload:', message.payloadString);
+          if ( message.payloadString.includes('*') && message.payloadString.includes('#')) 
+            {
+                 var myArray = message.payloadString.split(',');
+                  if (myArray.length >1)
+                  {
+                    var messageUnit = myArray[0];
+                    messageUnit = messageUnit.replace('*', '');
+                    myArray[1] = myArray[1].replace('#', '');
+                    var Sequence=0;
+                    var WarningTime=parseInt(localStorage.getItem("WarningTime"));
+                    for (var i = 0 ; i < Length ; i++)
+                    {
+                      if (messageUnit == machineNumbers[i])
+                        {
+                          Sequence = i;
+                          if (timeOuts[Sequence] < (WarningTime - 2))
+                          {    
+                             timeOuts[Sequence] = WarningTime;
+                             SimulatorColors[i] = 'green';
+                             localStorage.setItem("SimulatorColors",JSON.stringify(SimulatorColors) )   
+                             msgArray[Sequence] = { "payload": (machineNumbers[Sequence]) + '  ' + (timeOuts[Sequence].toString()) , "color":'green' };
+                           }    
+                         }
+                           else{
+               
+                            }   
+                      }
+                      }
+                }
+                else{
+
+                  for (var i = 0; i < Length; i++) {
+                    if (timeOuts[i] > 0)
+                        timeOuts[i]--;
+                    if (machineNumbers[i] == 0)
+                    {
+                        simulatorColors[i] = 'black';
+                        localStorage.setItem("SimulatorColors",JSON.stringify(simulatorColors));    
+                    }
+                    else if (timeOuts[i] == 0)
+                    {    
+                        message.payloadString = '*' + machineNumbers[i] + ',SUM,BEN,3,0,0,0,0,0#';
+                        msgArray[i] = {'color':'orange'};
+                        simulatorColors[i] = 'orange';
+                        localStorage.setItem("SimulatorColors",JSON.stringify(simulatorColors));    
+                        timeOuts[i] = WarningTime;   
+                        localStorage.setItem("TimeOuts",JSON.stringify(timeOuts));    
+                        msgArray[i] = { "payload": (machineNumbers[i]) + '  ' + (timeOuts[i].toString()), "color": simulatorColors[i] };    
+                        // return [msg, msgArray[0], msgArray[1], msgArray[2], msgArray[3], msgArray[4], msgArray[5], msgArray[6], msgArray[7], msgArray[8], msgArray[9], msgArray[10], msgArray[11], msgArray[12], msgArray[13], msgArray[14], msgArray[15]];
+                    }
+                      
+                    msgArray[i] = { "payload": (machineNumbers[i]) + '  '+ (timeOuts[i].toString()) , "color": simulatorColors[i] };    
+                }
+                  
+                }
           // Handle the MQTT message here
         };
 
@@ -95,19 +152,23 @@ export default function Simulator(){
     
 
      const Machine1Change=(e)=>{
-   
+        const i=0;
         const MachineNumbers = JSON.parse(localStorage.getItem("MachineNumbers"))|| machineNumbers;
-        MachineNumbers[0]=parseInt(e.target.value);
+        MachineNumbers[i]=parseInt(e.target.value);
         localStorage.setItem("MachineNumbers",JSON.stringify(MachineNumbers));
-        setMachineNumber(MachineNumbers);
+        const times=JSON.parse(localStorage.getItem("TimeOuts"))|| timeOuts;
+        times[i]=parseInt(localStorage.getItem("WarningTime"));
+        localStorage.setItem("TimeOuts",JSON.stringify(times));
         LoadingMqtt()
     }
     const Machine2Change=(e)=>{
-   
+      const i=1;
       const MachineNumbers = JSON.parse(localStorage.getItem("MachineNumbers"))|| machineNumbers;
-      MachineNumbers[1]=parseInt(e.target.value);
+      MachineNumbers[i]=parseInt(e.target.value);
       localStorage.setItem("MachineNumbers",JSON.stringify(MachineNumbers));
-      setMachineNumber(MachineNumbers);
+      const times=JSON.parse(localStorage.getItem("TimeOuts"))|| timeOuts;
+      times[i]=parseInt(localStorage.getItem("WarningTime"));
+      localStorage.setItem("TimeOuts",JSON.stringify(times));
       LoadingMqtt()
   }
 
