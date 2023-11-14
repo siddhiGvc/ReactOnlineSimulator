@@ -39,11 +39,7 @@ export default function Simulator(){
    },[machineState.machineNumbers])
   
 
-   useEffect(()=>{
   
-      LoadingMqtt();
-   },[])
-
    const mqttConnection=()=>{
     const broker = 'broker.emqx.io'; // Replace with your MQTT broker URL
       
@@ -62,7 +58,8 @@ export default function Simulator(){
        onSuccess: onConnect,
       
      });
- 
+
+    
      client.onMessageArrived = (message) => {
        console.log('Message received on topic:', message.destinationName);
        console.log('Payload:', message.payloadString);
@@ -140,6 +137,8 @@ export default function Simulator(){
      //     msgArray[i] = { "payload": (machineNumbers[i]) + '  '+ (timeOuts[i].toString()) , "color": simulatorColors[i] };    
      // }
      }
+    
+    
 
      return () => {
        // client.disconnect();
@@ -147,30 +146,40 @@ export default function Simulator(){
 
    }
     
-    const LoadingMqtt=()=>{
-     
-    
-        // localStorage.setItem("WarningTime",130);
+    const sendMqtt=(machine_number)=>{
+      const broker = 'broker.emqx.io'; // Replace with your MQTT broker URL
+       console.log(1);
+      // Replace with your MQTT password
    
-        // var MachineNumbers=JSON.parse(localStorage.getItem("MachineNumbers")) || machineNumbers;
-        // console.log(MachineNumbers);
-        // setMachineNumber(MachineNumbers);
+       const client = new Client(broker,8083, 'SIDDHI-DH');
+       const topic = 'testtopic/react'; // Replace with your desired topic
+       const message = `*${machine_number},SUM,BEN,3,0,0,0,0,#`; // Replace with your message
+      
+       
+       const onConnect = () => {
+        console.log('Connected to MQTT broker');
+        // Publish the message after a successful connection
+        client.publish(topic, message, 0, false);
+      };
+    
+      client.onConnectionLost = (responseObject) => {
+        if (responseObject.errorCode !== 0) {
+          console.log('Connection lost:', responseObject.errorMessage);
+        }
+      };
+    
+      // Connect to the broker with the onConnect callback
+      client.connect({
+        onSuccess: onConnect,
+      });
+      
+
+    
      
-        // var simulator_colors=JSON.parse(localStorage.getItem("SimulatorColors")) || simulatorColors;
-        // console.log(simulator_colors);
-        // setSimulatorColors(simulator_colors);
-      
-        // var timeouts=JSON.parse(localStorage.getItem("TimeOuts")) || timeOuts;
-        // setTimeouts(timeouts);
-      
-  }
- let intervalId;
-  useEffect(() => {
-    // Check the condition and clear the interval if necessary
-    if (machineState.timeOuts[0] < 0) {
-      clearInterval(intervalId);
     }
-  }, [machineState.timeOuts[0]]); 
+
+
+
     
 
   const Machine1Change = (e) => {
@@ -178,16 +187,33 @@ export default function Simulator(){
     updateMachine(i, 'blue', parseInt(e.target.value), 130);
 
     if (e.target.value.length >= 4) {
-       intervalId = setInterval(() => {
-        setMachineState((prevState) => ({
-          ...prevState,
-          timeOuts: prevState.timeOuts.map((prevTimeout, index) =>
+      const intervalId1 = setInterval(() => {
+        setMachineState((prevState) => {
+          const updatedTimeouts = prevState.timeOuts.map((prevTimeout, index) =>
             index === i ? prevTimeout - 1 : prevTimeout
-          ),
-        }));
+          );
+    
+          if (updatedTimeouts[i] == 0) {
+            clearInterval(intervalId1);
+            if(machineState.simulatorColors[i]!='green')
+            {
+            updateMachine(i, 'orange', parseInt(e.target.value), 0);
+            sendMqtt(e.target.value);
+            }
+            else
+            {
+              updateMachine(i, 'green', parseInt(e.target.value), 0);
+            }
+            
+          }
+    
+          return {
+            ...prevState,
+            timeOuts: updatedTimeouts,
+          };
+        });
       }, 1000);
-     
-      // Clear the interval when the countdown is done
+    
     
     }
   };
@@ -199,13 +225,29 @@ export default function Simulator(){
     updateMachine(i, 'blue', parseInt(e.target.value), 130);
 
     if (e.target.value.length >= 4) {
-       intervalId = setInterval(() => {
-        setMachineState((prevState) => ({
-          ...prevState,
-          timeOuts: prevState.timeOuts.map((prevTimeout, index) =>
+      const intervalId2 = setInterval(() => {
+        setMachineState((prevState) => {
+          const updatedTimeouts = prevState.timeOuts.map((prevTimeout, index) =>
             index === i ? prevTimeout - 1 : prevTimeout
-          ),
-        }));
+          );
+    
+          if (updatedTimeouts[i] == 0) {
+            clearInterval(intervalId2);
+            if(machineState.simulatorColors[i]!='green')
+            {
+            updateMachine(i, 'orange', parseInt(e.target.value), 0);
+            sendMqtt(e.target.value);
+            }
+            else{
+              updateMachine(i, 'green', parseInt(e.target.value), 0);
+            }
+          }
+    
+          return {
+            ...prevState,
+            timeOuts: updatedTimeouts,
+          };
+        });
       }, 1000);
     
    
