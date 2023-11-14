@@ -36,7 +36,7 @@ export default function Simulator(){
    useEffect(()=>{
       mqttConnection();
     
-   },[])
+   },[machineState.machineNumbers])
   
 
    useEffect(()=>{
@@ -80,7 +80,7 @@ export default function Simulator(){
                  for (var i = 0 ; i < 2 ; i++)
                  {
                    console.log(messageUnit,machineState.machineNumbers[i]);
-                   if (messageUnit === machineState.machineNumbers[i])
+                   if (messageUnit == machineState.machineNumbers[i])
                      {
                        Sequence = i;
                        
