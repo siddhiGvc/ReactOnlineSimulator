@@ -22,8 +22,14 @@ const Router = () => {
       
         },
         {
-          path:'/home',
-          element:<Home/>
+          path:'/',
+          element:<Main/>,
+          children:[
+            {
+              path:'/home',
+              element:<Home/>
+            }
+          ]
         }
         
   ])
