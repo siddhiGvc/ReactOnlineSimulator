@@ -204,9 +204,9 @@ export default function Simulator1(){
   const Machine1Change = (e,i) => {
   
     updateMachine(i, 'blue', parseInt(e.target.value), 130);
-
+    let intervalId1;
     if (e.target.value.length >= 4 && machineState.timeOuts[i]>0) {
-      const intervalId1 = setInterval(() => {
+     intervalId1 = setInterval(() => {
         setMachineState((prevState) => {
           const updatedTimeouts = prevState.timeOuts.map((prevTimeout, index) =>
             index === i ? prevTimeout - 1 : prevTimeout
@@ -232,6 +232,10 @@ export default function Simulator1(){
       }, 1000);
     
     
+    }
+    else
+    {
+      clearInterval(intervalId1);
     }
   };
   
