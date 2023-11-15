@@ -4,6 +4,7 @@ import {Route,Routes,createBrowserRouter,RouterProvider } from 'react-router-dom
 
 import Main from './Main'
 import Home from '../Pages/home/home';
+import SignIn from '../components/Login/login';
 
 const Router = () => {
   const [elmBlog, setElmBlog] = useState([]);
@@ -11,15 +12,19 @@ const Router = () => {
   const router = createBrowserRouter([
       {
       path: '/',
-      element: <Main/>,
-      children: [
-        {
-          path: '/',
-          element: <Home/>
-        },
-      ]  
+      element: <SignIn/>,
+      // children: [
+      //   {
+      //     path: '/',
+      //     element: <Home/>
+      //   },
+      // ]  
       
         },
+        {
+          path:'/home',
+          element:<Home/>
+        }
         
   ])
   return <>
