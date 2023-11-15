@@ -1,5 +1,5 @@
 .mainContainer{
-    width:40%;
+
     display: flex;
     background-color: #ffffff;
     padding-bottom: 50px;
@@ -10,7 +10,6 @@
     background-color: #ffffff;
     padding-left:2%;
     padding-right:2%;
-    margin:"auto";
     display: flex;
     flex-direction: column;
     gap:10px;
