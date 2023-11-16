@@ -12,7 +12,7 @@ import { Client } from 'paho-mqtt';
 
 
 export default function Simulator1(){
-  let Length=20;
+  let Length=40;
   const [machineState, setMachineState] = useState({
     simulatorColors: Array.from({ length: Length }, (_, index) => `${'initialColor'}`),
     machineNumbers: Array.from({ length: Length }, (_, index) => `${0}`),
@@ -75,38 +75,51 @@ export default function Simulator1(){
                  myArray[1] = myArray[1].replace('#', '');
                  var Sequence=0;
            
-                 for (var i = 0 ; i < Length ; i++)
+                 for (let i = 0 ; i < Length ; i++)
                  {
-                   console.log(messageUnit,machineState.machineNumbers[i]);
-                   if (messageUnit == machineState.machineNumbers[i])
-                     {
+                 
                        Sequence = i;
-                       
+                       let updatedSimulatorColors;
+                       let updatedTimeouts;
                    
-                        console.log("green");
+                      
                             setMachineState((prevState) => {
-                          const updatedSimulatorColors = prevState.simulatorColors.map((prevColor, index) =>
-                            index === i ? 'green': prevColor
-                          );
-                           const updatedTimeouts = prevState.timeOuts.map((prevTimeout, index) =>
-                              index === i ? 50: prevTimeout
-                            );
-                            return {
-                            ...prevState,
-                            simulatorColors:updatedSimulatorColors,
-                            timeOuts:updatedTimeouts
-                          };   });
+                          
+                             console.log(prevState.machineNumbers[i]);
+                              if (messageUnit == prevState.machineNumbers[i])
+                              {
+                                
+                                console.log("green");
+                                updatedSimulatorColors = prevState.simulatorColors.map((prevColor, index) =>
+                                index === i ? 'green': prevColor
+                              );
+                                updatedTimeouts = prevState.timeOuts.map((prevTimeout, index) =>
+                                  index === i ? 0: prevTimeout
+                                );
+                              
+                              }
+                              else{
+                                 updatedSimulatorColors=prevState.simulatorColors;
+                                 updatedTimeouts=prevState.timeOuts;
+                               
+                              }
+
+                              return {
+                                ...prevState,
+                                simulatorColors:updatedSimulatorColors,
+                                timeOuts:updatedTimeouts
+                              }; 
+                        
+                          
+                            });
   
 
-                         console.log(2);
+                        //  console.log(2);
                          
                           // messageArray[Sequence] = { "payload": (machineNumbers[Sequence]) + '  ' + (timeOuts[Sequence].toString()) , "color":'green' };
                           // setMessageArray(messageArray);
                           
-                      }
-                        else{
-            
-                         }   
+                    
                    }
                }
          }
@@ -163,7 +176,7 @@ export default function Simulator1(){
       // Replace with your MQTT password
    
        const client = new Client(broker,8083, 'SIDDHI-DH');
-       const topic = 'GVC/VM/90000'; // Replace with your desired topic
+       const topic = 'testtopic/react'; // Replace with your desired topic
        const message = `*${machine_number},SUM,BEN,3,0,0,0,0,#`; // Replace with your message
       
        
@@ -197,28 +210,37 @@ export default function Simulator1(){
      
     }
 
-
-
     
-
   const Machine1Change = (e,i) => {
   
     updateMachine(i, 'blue', parseInt(e.target.value), 130);
     let intervalId1;
-    if (e.target.value.length >= 4 && machineState.timeOuts[i]>0) {
+ 
+    if (e.target.value.length == 4 && machineState.timeOuts[i]>0) {
      intervalId1 = setInterval(() => {
-        setMachineState((prevState) => {
-          const updatedTimeouts = prevState.timeOuts.map((prevTimeout, index) =>
-            index === i ? prevTimeout - 1 : prevTimeout
-          );
     
 
-          if (updatedTimeouts[i] <= 0) {
+        setMachineState((prevState) => {
+          let updatedTimeouts = prevState.timeOuts.map((prevTimeout, index) =>
+            index === i ? prevTimeout - 1 : prevTimeout
+          );
+          if (!(e.target.value.length === 4 && prevState.timeOuts[i] > 0)) {
+            clearInterval(intervalId1);
+             updatedTimeouts = prevState.timeOuts.map((prevTimeout, index) =>
+            index === i ? 130 : prevTimeout
+          );
+          }
+
+          else if (updatedTimeouts[i] <= 0) {
             clearInterval(intervalId1);
             
             console.log(machineState.simulatorColors[i]);
           
-            sendMqtt(e.target.value,i);
+            if(prevState.simulatorColors[i]!='green')
+            {
+              sendMqtt(e.target.value,i);
+            
+            }
             
             
          
@@ -235,7 +257,7 @@ export default function Simulator1(){
     }
     else
     {
-      clearInterval(intervalId1);
+      clearInterval(intervalId1)
     }
   };
   
@@ -253,9 +275,55 @@ return <>
 
         </div>
         {machineState.simulatorColors.map((elem,i)=>{
+          if(i<=(Length/2 -1))
+          {
            return  <div className={styles.buttonBox}>
         <Button variant="contained" sx={{backgroundColor:`${machineState.simulatorColors[i]}`,position:"static",width:"100%",margin:"auto",height:"40px",fontSize:"100%",fontWeight:"400"}} >{`${machineState.machineNumbers[i]} ${machineState.timeOuts[i]}`}</Button>
         </div>
+          }
+
+        })}
+     
+      
+      
+</div>
+   <div className={styles.container}>
+    <div className={styles.header}>
+          <p>Machine Number</p>
+           </div>
+     
+        <div className={styles.rowContainer}>
+          {machineState.simulatorColors.map((elem,i)=>{
+            if(i<=(Length/2 -1))
+             return <TextField
+              id="standard-multiline-flexible"
+              label={`Machine ${i+1}`}
+              type="text"
+              multiline
+              maxRows={4}
+              variant="standard"
+            
+              onChange={(e)=>Machine1Change(e,i)}
+            
+            />
+
+          })}
+      </div>
+    </div>
+  </div>
+  <div className={styles.mainContainer}>
+<div className={styles.container}>
+        <div className={styles.header}>
+          <p>Start Stop</p>
+
+        </div>
+        {machineState.simulatorColors.map((elem,i)=>{
+          if(i>=(Length/2 ))
+          {
+           return  <div className={styles.buttonBox}>
+        <Button variant="contained" sx={{backgroundColor:`${machineState.simulatorColors[i]}`,position:"static",width:"100%",margin:"auto",height:"40px",fontSize:"100%",fontWeight:"400"}} >{`${machineState.machineNumbers[i]} ${machineState.timeOuts[i]}`}</Button>
+        </div>
+          }
 
         })}
      
@@ -273,6 +341,8 @@ return <>
      
         <div className={styles.rowContainer}>
           {machineState.simulatorColors.map((elem,i)=>{
+            if(i>=(Length/2))
+            {
              return <TextField
               id="standard-multiline-flexible"
               label={`Machine ${i+1}`}
@@ -284,6 +354,7 @@ return <>
               onChange={(e)=>Machine1Change(e,i)}
             
             />
+            }
 
           })}
       
@@ -300,6 +371,7 @@ return <>
 
 
     </div>
+
 
     
     </>

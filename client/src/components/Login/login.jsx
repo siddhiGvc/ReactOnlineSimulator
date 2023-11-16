@@ -73,9 +73,9 @@ export default function SignIn() {
         //  console.log(json);
         //  console.log(json.data.token);
         // console.log(json.data);
-        // localStorage.setItem('name',json.data.user.name);
-        // window.sessionStorage.setItem('token', json.data.token);
-        // navigate("/home");
+        localStorage.setItem('name',json.data.user.name);
+        window.sessionStorage.setItem('token', json.data.token);
+        navigate("/home");
         // showAlertMessage();
         // localStorage.setItem("token",JSON.stringify(json.data.token));
 

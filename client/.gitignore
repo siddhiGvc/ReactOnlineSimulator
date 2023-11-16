@@ -10,6 +10,7 @@
 
 # production
 /build
+API/secret.js
 
 # misc
 .DS_Store
